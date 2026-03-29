@@ -5,8 +5,8 @@ function sanitize(str, maxLen = 500) {
   return String(str).replace(/<[^>]*>/g, '').replace(/[<>'"]/g, '').trim().slice(0, maxLen)
 }
 
-function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) }
-function isValidPhone(p) { return /^[\d\s\+\-\(\)]{7,20}$/.test(p) }
+function isValidEmail(e) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e) }
+function isValidPhone(p) { return /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(p.replace(/\s/g, '')) }
 
 const ALLOWED_SERVICES = [
   'Channel Manager','Booking Engine','Cloud PMS','Cloud POS',
@@ -32,19 +32,27 @@ export default async function handler(req, res) {
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown'
   if (!checkRateLimit(ip)) return res.status(429).json({ error: 'Too many requests. Please try again later.' })
 
-  const name    = sanitize(req.body?.name, 100)
-  const email   = sanitize(req.body?.email, 200)
-  const phone   = sanitize(req.body?.phone, 20)
-  const hotel   = sanitize(req.body?.hotel, 150)
-  const service = sanitize(req.body?.service, 100)
-  const subject = sanitize(req.body?.subject, 200)
-  const message = sanitize(req.body?.message, 2000)
-  const source  = sanitize(req.body?.source, 50)
+  const body = req.body || {}
+  const name = sanitize(body.name, 100)
+  const hotel = sanitize(body.hotel, 150)
+  const phone = (body.phone || '').replace(/\s/g, '').slice(0, 20)
+  const email = (body.email || '').toLowerCase().trim().slice(0, 150)
+  const message = sanitize(body.message, 2000)
+  const service = sanitize(body.service, 100)
+  const source = sanitize(body.source, 50)
+  const subject = sanitize(body.subject, 150)
 
-  if (!name || name.length < 2) return res.status(400).json({ error: 'Please enter your name.' })
-  if (!phone || !isValidPhone(phone)) return res.status(400).json({ error: 'Please enter a valid phone number.' })
-  if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Please enter a valid email address.' })
+  if (!name || name.length < 2) return res.status(400).json({ error: 'Valid name required (min 2 chars)' })
+  if (!phone || !isValidPhone(phone)) return res.status(400).json({ error: 'Valid 10-digit Indian phone number required' })
+  if (email && !isValidEmail(email)) return res.status(400).json({ error: 'Invalid email address' })
+  if (message && message.length < 10) return res.status(400).json({ error: 'Message too short (min 10 chars)' })
   if (service && !ALLOWED_SERVICES.includes(service)) return res.status(400).json({ error: 'Invalid service selected.' })
+
+  const logEntry = {
+    id: Date.now().toString(),
+    name, hotel, phone, email, message, service, source, subject,
+    timestamp: new Date().toISOString()
+  }
 
   // ── Save to Supabase ──────────────────────────────────
   try {

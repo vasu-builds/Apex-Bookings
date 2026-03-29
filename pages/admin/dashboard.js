@@ -536,7 +536,11 @@ export default function Dashboard() {
                       {[['name','Plan Name'],['price','Monthly Price (₹)']].map(([k,l]) => (
                         <div key={k}>
                           <label className="admin-label">{l}</label>
-                          <input className="admin-input" value={plan[k]||''} onChange={e=>{const p=[...config.pricing];p[i]={...p[i],[k]:e.target.value};setConfig(c=>({...c,pricing:p}))}}/>
+                          <input className="admin-input" value={plan[k]||''} onChange={e=>{
+                            let val = e.target.value
+                            if (k === 'price') val = val.replace(/[^0-9]/g, '')
+                            const p=[...config.pricing];p[i]={...p[i],[k]:val};setConfig(c=>({...c,pricing:p}))
+                          }}/>
                         </div>
                       ))}
                     </div>
@@ -572,7 +576,13 @@ export default function Dashboard() {
                     </div>
                     <div style={{marginBottom:12}}>
                       <label className="admin-label">Star Rating (1–5)</label>
-                      <input className="admin-input" type="number" min={1} max={5} value={t.rating||5} onChange={e=>{const ts=[...config.testimonials];ts[i]={...ts[i],rating:parseInt(e.target.value)};setConfig(c=>({...c,testimonials:ts}))}} style={{width:72}}/>
+                      <input className="admin-input" type="number" min={1} max={5} value={t.rating||5} onChange={e=>{
+                        let val = parseInt(e.target.value)
+                        if (isNaN(val)) val = 5
+                        if (val < 1) val = 1
+                        if (val > 5) val = 5
+                        const ts=[...config.testimonials];ts[i]={...ts[i],rating:val};setConfig(c=>({...c,testimonials:ts}))
+                      }} style={{width:72}}/>
                     </div>
                     <div>
                       <label className="admin-label">Quote</label>
@@ -619,7 +629,12 @@ export default function Dashboard() {
                 {[['email','Primary Email (info@)'],['support','Support Email'],['phone','Phone 1'],['phone2','Phone 2'],['whatsapp','WhatsApp Number (digits only, no + or spaces)'],['address','Full Address']].map(([k,l]) => (
                   <div key={k} style={{marginBottom:16}}>
                     <label className="admin-label">{l}</label>
-                    <input className="admin-input" value={config.contact?.[k]||''} onChange={e=>setConfig(c=>({...c,contact:{...c.contact,[k]:e.target.value}}))}/>
+                    <input className="admin-input" value={config.contact?.[k]||''} onChange={e=>{
+                      let val = e.target.value
+                      if (k === 'whatsapp') val = val.replace(/[^0-9]/g, '').slice(0, 15)
+                      if (k.startsWith('phone')) val = val.replace(/[^0-9+\s-]/g, '').slice(0, 20)
+                      setConfig(c=>({...c,contact:{...c.contact,[k]:val}}))
+                    }}/>
                   </div>
                 ))}
               </div>

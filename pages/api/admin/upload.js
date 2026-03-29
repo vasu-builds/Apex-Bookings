@@ -19,10 +19,10 @@ export default async function handler(req, res) {
   const { filename, data } = req.body
   if (!filename || !data) return res.status(400).json({ error: 'filename and data required' })
 
-  const safe = filename.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase()
+  const safe = filename.split(/[\\/]/).pop().replace(/[^a-zA-Z0-9.-]/g, '-').toLowerCase()
   const ext = safe.split('.').pop()
-  if (!['jpg','jpeg','png','webp','gif','svg'].includes(ext)) {
-    return res.status(400).json({ error: 'Only image files allowed' })
+  if (!['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'].includes(ext)) {
+    return res.status(400).json({ error: 'Only image files allowed (jpg, png, webp, gif, svg)' })
   }
 
   const base64 = data.replace(/^data:[^;]+;base64,/, '')

@@ -4,15 +4,44 @@ import Navbar from '../src/components/Navbar'
 import Footer from '../src/components/Footer'
 import EnquiryModal from '../src/components/EnquiryModal'
 
+function isValidEmail(e) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e) }
+function isValidPhone(p) { return /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(p.replace(/\s/g, '')) }
+
 export default function Offer() {
   const [form, setForm] = useState({name:'',hotel:'',email:'',phone:''})
+  const [errors, setErrors] = useState({})
   const [enquiryOpen, setEnquiryOpen] = useState(false)
   const [sent, setSent] = useState(false)
   const [loading, setLoading] = useState(false)
-  const set = k => e => setForm(f => ({...f,[k]:e.target.value}))
+  
+  const set = k => e => {
+    let val = e.target.value
+    if (k === 'name') val = val.slice(0, 100)
+    if (k === 'hotel') val = val.slice(0, 150)
+    if (k === 'phone') val = val.replace(/[^0-9+\s\-\(\)]/g, '').slice(0, 20)
+    setForm(f => ({...f,[k]:val}))
+    if (errors[k]) setErrors(er => ({...er,[k]:undefined}))
+  }
+
+  const validate = () => {
+    const e = {}
+    if (!form.name.trim()) e.name = 'Please enter your name'
+    else if (form.name.trim().length < 2) e.name = 'Min 2 characters'
+    
+    if (!form.hotel.trim()) e.hotel = 'Please enter your hotel name'
+    
+    if (!form.email) e.email = 'Email required'
+    else if (!isValidEmail(form.email)) e.email = 'Invalid email'
+    
+    if (!form.phone) e.phone = 'Phone required'
+    else if (!isValidPhone(form.phone)) e.phone = 'Enter valid 10-digit number'
+    return e
+  }
 
   const submit = async e => {
     e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length > 0) { setErrors(errs); return }
     setLoading(true)
     try {
       await fetch('/api/contact', {
@@ -20,8 +49,8 @@ export default function Offer() {
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({...form, source:'offer', subject:'Complete Hotel Suite Offer'})
       })
+      setSent(true)
     } catch {}
-    setSent(true)
     setLoading(false)
   }
 
@@ -124,19 +153,23 @@ export default function Offer() {
                   <form onSubmit={submit}>
                     <div style={{marginBottom:14}}>
                       <label className="field-l">Your Name *</label>
-                      <input className="field-i" type="text" placeholder="Raj Sharma" required value={form.name} onChange={set('name')}/>
+                      <input className="field-i" type="text" placeholder="Raj Sharma" value={form.name} onChange={set('name')} style={{borderColor:errors.name?'#ef4444':undefined}}/>
+                      {errors.name && <span style={{fontSize:12,color:'#ef4444',display:'block',marginTop:3}}>{errors.name}</span>}
                     </div>
                     <div style={{marginBottom:14}}>
                       <label className="field-l">Hotel Name *</label>
-                      <input className="field-i" type="text" placeholder="Hotel Grand" required value={form.hotel} onChange={set('hotel')}/>
+                      <input className="field-i" type="text" placeholder="Hotel Grand" value={form.hotel} onChange={set('hotel')} style={{borderColor:errors.hotel?'#ef4444':undefined}}/>
+                      {errors.hotel && <span style={{fontSize:12,color:'#ef4444',display:'block',marginTop:3}}>{errors.hotel}</span>}
                     </div>
                     <div style={{marginBottom:14}}>
                       <label className="field-l">Email *</label>
-                      <input className="field-i" type="email" placeholder="you@hotel.com" required value={form.email} onChange={set('email')}/>
+                      <input className="field-i" type="email" placeholder="you@hotel.com" value={form.email} onChange={set('email')} style={{borderColor:errors.email?'#ef4444':undefined}}/>
+                      {errors.email && <span style={{fontSize:12,color:'#ef4444',display:'block',marginTop:3}}>{errors.email}</span>}
                     </div>
                     <div style={{marginBottom:24}}>
                       <label className="field-l">Phone *</label>
-                      <input className="field-i" type="tel" placeholder="+91 98765 43210" required value={form.phone} onChange={set('phone')}/>
+                      <input className="field-i" type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={set('phone')} style={{borderColor:errors.phone?'#ef4444':undefined}}/>
+                      {errors.phone && <span style={{fontSize:12,color:'#ef4444',display:'block',marginTop:3}}>{errors.phone}</span>}
                     </div>
                     <button type="submit" disabled={loading} className="btn-primary" style={{width:'100%',justifyContent:'center',opacity:loading?0.7:1,padding:'14px',fontSize:15}}>
                       {loading ? 'Submitting...' : 'Get Pricing & Details →'}

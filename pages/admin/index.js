@@ -16,6 +16,14 @@ export default function AdminLogin() {
 
   const submit = async e => {
     e.preventDefault()
+    if (!form.username || form.username.length < 3) {
+      setError('Username must be at least 3 characters')
+      return
+    }
+    if (!form.password || form.password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
     setLoading(true); setError('')
     try {
       const res = await fetch('/api/admin/login', {
@@ -27,7 +35,7 @@ export default function AdminLogin() {
         localStorage.setItem('admin-token', data.token)
         router.push('/admin/dashboard')
       } else {
-        setError('Invalid username or password')
+        setError(data.error || 'Invalid username or password')
       }
     } catch { setError('Connection error') }
     setLoading(false)

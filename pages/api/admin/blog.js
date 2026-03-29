@@ -16,7 +16,7 @@ function readLocal() {
   try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')) } catch { return [] }
 }
 function writeLocal(posts) {
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(posts, null, 2)) } catch(e) {
+  try { fs.writeFileSync(DATA_FILE, JSON.stringify(posts, null, 2)) } catch (e) {
     throw new Error('Could not write blog-posts.json: ' + e.message)
   }
 }
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
             .eq('published', true).order('created_at', { ascending: false })
           if (!error && data) return res.json(data.map(normalizePost))
         }
-      } catch(e) { /* fall through */ }
+      } catch (e) { /* fall through */ }
     }
 
     // JSON fallback
@@ -81,9 +81,14 @@ export default async function handler(req, res) {
           .from('blog_posts').select('*')
           .order('created_at', { ascending: false })
         if (!error && data) return res.json(data.map(normalizePost))
-      } catch(e) { /* fall through */ }
+      } catch (e) { /* fall through */ }
     }
     return res.json(readLocal().map(normalizePost))
+  }
+
+  const sanitize = (str, maxLen = 5000) => {
+    if (!str) return ''
+    return String(str).replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').trim().slice(0, maxLen)
   }
 
   // POST — create
@@ -93,13 +98,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'title and slug are required' })
     }
 
+    const title = sanitize(body.title, 200)
+    const slug = body.slug.replace(/[^a-z0-9-]/g, '').toLowerCase().slice(0, 200)
+    const excerpt = sanitize(body.excerpt, 1000)
+    const content = sanitize(body.content, 50000)
+
     if (sb) {
       try {
         const row = {
-          title: body.title,
-          slug: body.slug,
-          excerpt: body.excerpt || '',
-          content: body.content || '',
+          title, slug, excerpt, content,
           cover_image: body.coverImage || body.cover_image || '',
           category: body.category || 'General',
           author: body.author || 'Apex Bookings Team',
@@ -108,30 +115,26 @@ export default async function handler(req, res) {
         }
         const { data, error } = await sb.from('blog_posts').insert(row).select().single()
         if (error) {
-          // Duplicate slug
           if (error.code === '23505') return res.status(409).json({ error: 'A post with this slug already exists.' })
-          // If supabase error but not a cred issue, still fall through to local
           if (!error.message?.includes('fetch')) throw new Error(error.message)
         }
         if (data) return res.json(normalizePost(data))
-      } catch(e) {
-        if (!e.message?.includes('fetch') && !e.message?.includes('network')) {
-          return res.status(500).json({ error: e.message })
-        }
-        // Network/fetch error → fall through to local
+      } catch (e) {
+        if (!e.message?.includes('fetch') && !e.message?.includes('network')) return res.status(500).json({ error: e.message })
       }
     }
 
     // JSON fallback
     const posts = readLocal()
-    if (posts.find(p => p.slug === body.slug)) {
-      return res.status(409).json({ error: 'A post with this slug already exists.' })
-    }
+    if (posts.find(p => p.slug === slug)) return res.status(409).json({ error: 'A post with this slug already exists.' })
     const newPost = {
-      ...body,
+      title, slug, excerpt, content,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
+      coverImage: body.coverImage || '',
+      category: body.category || 'General',
+      readTime: body.readTime || '4 min read',
       published: !!body.published,
+      createdAt: new Date().toISOString().split('T')[0],
     }
     posts.unshift(newPost)
     writeLocal(posts)
@@ -144,13 +147,15 @@ export default async function handler(req, res) {
     if (!body.id) return res.status(400).json({ error: 'id is required' })
     if (!body.title || !body.slug) return res.status(400).json({ error: 'title and slug are required' })
 
+    const title = sanitize(body.title, 200)
+    const slug = body.slug.replace(/[^a-z0-9-]/g, '').toLowerCase().slice(0, 200)
+    const excerpt = sanitize(body.excerpt, 1000)
+    const content = sanitize(body.content, 50000)
+
     if (sb) {
       try {
         const row = {
-          title: body.title,
-          slug: body.slug,
-          excerpt: body.excerpt || '',
-          content: body.content || '',
+          title, slug, excerpt, content,
           cover_image: body.coverImage || body.cover_image || '',
           category: body.category || 'General',
           read_time: body.readTime || body.read_time || '4 min read',
@@ -158,14 +163,10 @@ export default async function handler(req, res) {
           updated_at: new Date().toISOString(),
         }
         const { data, error } = await sb.from('blog_posts').update(row).eq('id', body.id).select().single()
-        if (error && !error.message?.includes('fetch')) {
-          return res.status(500).json({ error: error.message })
-        }
+        if (error && !error.message?.includes('fetch')) return res.status(500).json({ error: error.message })
         if (data) return res.json(normalizePost(data))
-      } catch(e) {
-        if (!e.message?.includes('fetch') && !e.message?.includes('network')) {
-          return res.status(500).json({ error: e.message })
-        }
+      } catch (e) {
+        if (!e.message?.includes('fetch') && !e.message?.includes('network')) return res.status(500).json({ error: e.message })
       }
     }
 
@@ -173,7 +174,7 @@ export default async function handler(req, res) {
     const posts = readLocal()
     const idx = posts.findIndex(p => String(p.id) === String(body.id))
     if (idx === -1) return res.status(404).json({ error: 'Post not found' })
-    posts[idx] = { ...posts[idx], ...body, published: !!body.published }
+    posts[idx] = { ...posts[idx], title, slug, excerpt, content, published: !!body.published }
     writeLocal(posts)
     return res.json(normalizePost(posts[idx]))
   }
@@ -188,7 +189,7 @@ export default async function handler(req, res) {
         const { error } = await sb.from('blog_posts').delete().eq('id', id)
         if (!error) return res.json({ success: true })
         if (!error.message?.includes('fetch')) return res.status(500).json({ error: error.message })
-      } catch(e) {
+      } catch (e) {
         if (!e.message?.includes('fetch') && !e.message?.includes('network')) {
           return res.status(500).json({ error: e.message })
         }

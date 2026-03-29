@@ -3,8 +3,8 @@ import { useState } from 'react'
 import Navbar from '../src/components/Navbar'
 import Footer from '../src/components/Footer'
 
-function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) }
-function isValidPhone(p) { return /^[\d\s\+\-\(\)]{7,20}$/.test(p) }
+function isValidEmail(e) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e) }
+function isValidPhone(p) { return /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(p.replace(/\s/g, '')) }
 
 export default function Contact() {
   const [form, setForm] = useState({name:'',email:'',phone:'',subject:'',message:''})
@@ -13,17 +13,29 @@ export default function Contact() {
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState('')
   const set = k => e => {
-    setForm(f => ({...f,[k]:e.target.value}))
+    let val = e.target.value
+    if (k === 'name') val = val.slice(0, 100)
+    if (k === 'subject') val = val.slice(0, 200)
+    if (k === 'message') val = val.slice(0, 2000)
+    if (k === 'phone') val = val.replace(/[^0-9+\s\-\(\)]/g, '').slice(0, 20)
+
+    setForm(f => ({...f,[k]:val}))
     if (errors[k]) setErrors(er => ({...er,[k]:undefined}))
   }
 
   const validate = () => {
     const e = {}
-    if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Enter your name'
-    if (!form.email || !isValidEmail(form.email)) e.email = 'Enter a valid email'
-    if (form.phone && !isValidPhone(form.phone)) e.phone = 'Enter a valid phone number'
-    if (!form.subject.trim()) e.subject = 'Enter a subject'
-    if (!form.message.trim()) e.message = 'Enter your message'
+    if (!form.name.trim()) e.name = 'Please enter your name'
+    else if (form.name.trim().length < 2) e.name = 'Name must be at least 2 characters'
+    
+    if (!form.email) e.email = 'Please enter your email'
+    else if (!isValidEmail(form.email)) e.email = 'Enter a valid email address'
+    
+    if (form.phone && !isValidPhone(form.phone)) e.phone = 'Enter a valid 10-digit phone number'
+    
+    if (!form.subject.trim()) e.subject = 'Please enter a subject'
+    if (!form.message.trim()) e.message = 'Please enter your message'
+    else if (form.message.trim().length < 10) e.message = 'Message is too short'
     return e
   }
 

@@ -8,16 +8,24 @@ const SERVICES = [
 
 function validate(form) {
   const errors = {}
-  if (!form.name.trim() || form.name.trim().length < 2)
+  if (!form.name.trim())
     errors.name = 'Please enter your name'
+  else if (form.name.trim().length < 2)
+    errors.name = 'Name must be at least 2 characters'
+
   if (!form.phone.trim())
     errors.phone = 'Phone number is required'
-  else if (!/^[\d\s\+\-\(\)]{7,20}$/.test(form.phone.trim()))
-    errors.phone = 'Enter a valid phone number'
-  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+  else if (!/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(form.phone.trim().replace(/\s/g, '')))
+    errors.phone = 'Enter a valid 10-digit phone number'
+
+  if (form.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email))
     errors.email = 'Enter a valid email address'
+
   if (form.message && form.message.length > 2000)
     errors.message = 'Message too long (max 2000 characters)'
+  else if (form.message && form.message.trim().length > 0 && form.message.trim().length < 10)
+    errors.message = 'Message is too short'
+    
   return errors
 }
 
