@@ -1,0 +1,142 @@
+{
+  "hero": {
+    "headline": "Your Partner in Hotel Revenue Growth",
+    "subheadline": "From smart revenue management to cutting-edge software — Channel Managers, Booking Engines, Cloud PMS, and tailored digital solutions.",
+    "dashboardImage": "/images/analytics-illustration.png"
+  },
+  "popup": {
+    "enabled": true,
+    "headline": "Limited Time — Complete Hotel Technology Suite",
+    "subtext": "Get Channel Manager, PMS, Booking Engine, Website & Hosting — all in one powerful bundle.",
+    "ctaText": "Claim This Offer",
+    "ctaLink": "/offer",
+    "badge": "Limited Time Offer"
+  },
+  "combo": {
+    "visible": true,
+    "name": "Complete Hotel Suite",
+    "price": "Contact Us",
+    "badge": "🔥 Limited Time Offer",
+    "features": [
+      "Channel Manager",
+      "PMS — Property Management System",
+      "Booking Engine",
+      "Hotel Website Builder",
+      "Hosting + SSL Certificate"
+    ]
+  },
+  "pricing": [
+    {
+      "name": "Starter",
+      "price": "3,000",
+      "sub": "Get online, start getting bookings",
+      "featured": false,
+      "features": [
+        "Rates Management",
+        "Bookings Management",
+        "Payment Collection",
+        "Payment Gateway Solutions",
+        "Channel Manager",
+        "Booking Engine"
+      ]
+    },
+    {
+      "name": "Growth",
+      "price": "6,000",
+      "sub": "Streamline your daily operations",
+      "featured": true,
+      "features": [
+        "Everything in Starter",
+        "Channel Manager",
+        "Booking Engine",
+        "Cloud PMS",
+        "Cloud POS",
+        "Front Desk Operations",
+        "Billing & Invoicing"
+      ]
+    },
+    {
+      "name": "Pro",
+      "price": "15,000",
+      "sub": "Full suite with expert management",
+      "featured": false,
+      "features": [
+        "Everything in Growth",
+        "Website + Hosting + SSL",
+        "Google Hotel Ads + OTA Listing",
+        "Revenue Management",
+        "Dedicated Account Manager"
+      ]
+    }
+  ],
+  "team": [
+    {
+      "name": "Veera Saravanan",
+      "role": "Founder & CEO",
+      "initials": "VS",
+      "color": "#1a4fc4",
+      "photo": ""
+    },
+    {
+      "name": "Uma Maheswari",
+      "role": "Director & VP — Sales",
+      "initials": "UM",
+      "color": "#7c3aed",
+      "photo": ""
+    },
+    {
+      "name": "Sangeetha Vijay",
+      "role": "Technical Head",
+      "initials": "SV",
+      "color": "#0891b2",
+      "photo": ""
+    },
+    {
+      "name": "Lakshmi Sree",
+      "role": "Strategic Consultant",
+      "initials": "LS",
+      "color": "#059669",
+      "photo": ""
+    }
+  ],
+  "contact": {
+    "email": "info@apexbookings.in",
+    "support": "support@apexbookings.in",
+    "phone": "+91 8171871902",
+    "phone2": "+91 8979071902",
+    "whatsapp": "918171871902",
+    "address": "Phartyal's Annexe, Anupam Vihar, Haldwani — 263139"
+  },
+  "testimonials": [
+    {
+      "quote": "Apex Bookings has been a genuine game-changer. Our OTA connectivity is seamless, revenue has grown significantly, and the support team is always available.",
+      "name": "Mr. Rohit Panwar",
+      "hotel": "Aarogya Residency",
+      "rating": 5
+    },
+    {
+      "quote": "Occupancy improved noticeably within the first few months. The Channel Manager is reliable and the team is proactive in suggesting improvements.",
+      "name": "Mr. Sagar Negi",
+      "hotel": "Hotel Kishna Palace",
+      "rating": 5
+    },
+    {
+      "quote": "Streamlined our operations entirely. The seasonal package features and support are excellent. A trustworthy long-term partner.",
+      "name": "Mr. Sunil Bisht",
+      "hotel": "Silver River Resort",
+      "rating": 5
+    },
+    {
+      "quote": "The Booking Engine has transformed our direct reservations. We are seeing 40% more direct bookings than before. Highly recommend.",
+      "name": "Mr. Anil Sharma",
+      "hotel": "Grand Palace Hotel",
+      "rating": 5
+    },
+    {
+      "quote": "Revenue management from Apex helped us optimize pricing strategy. Our RevPAR improved by 25% since we started with them.",
+      "name": "Ms. Priya Nair",
+      "hotel": "The Hillside Resort",
+      "rating": 5
+    }
+  ]
+}
