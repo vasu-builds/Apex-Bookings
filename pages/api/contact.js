@@ -79,7 +79,7 @@ export default async function handler(req, res) {
     if (apiKey && apiKey !== 're_your_api_key_here') {
       const { Resend } = require('resend')
       const resend = new Resend(apiKey)
-      const adminEmail = process.env.ADMIN_EMAIL || 'info@apexbookings.in'
+      const adminEmail = process.env.ADMIN_EMAIL || 'no-reply@apexbookings.in'
 
       const rows = [
         ['Name',    name],
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
       ]
 
       await resend.emails.send({
-        from: 'Apex Bookings <onboarding@resend.dev>',
+        from: 'Apex Bookings <no-reply@apexbookings.in',
         to: adminEmail,
         subject: `New Enquiry: ${name}${hotel ? ` — ${hotel}` : ''}${service ? ` (${service})` : ''}`,
         html: `
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
 
       if (email) {
         await resend.emails.send({
-          from: 'Apex Bookings <onboarding@resend.dev>',
+          from: 'Apex Bookings <no-reply@apexbookings.in>',
           to: email,
           subject: 'We received your enquiry — Apex Bookings',
           html: `
